@@ -62,7 +62,7 @@ export function FileUpload({ onAnalyze , onAnalyzeStart}: FileUploadProps) {
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    const res = await axios.post('http://localhost:5000/file', formData, {
+    const res = await axios.post('https://ai-advisor-jvlg.onrender.com/file', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

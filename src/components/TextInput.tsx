@@ -19,7 +19,7 @@ export function TextInput({ onAnalyze,onAnalyzeStart }: TextInputProps) {
     onAnalyzeStart();
     setIsProcessing(true);
     try {
-      const res = await axios.post('http://localhost:5000/text', {text : resumeText});
+      const res = await axios.post('https://ai-advisor-jvlg.onrender.com/text', {text : resumeText});
       onAnalyze(res.data);
     } finally {
       setIsProcessing(false);
