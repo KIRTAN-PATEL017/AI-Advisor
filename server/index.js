@@ -7,7 +7,10 @@ const callHFapi = require("./hf-api");
 const app = express();
 const upload = multer();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://ai-advisor-lemon.vercel.app'
+}));
+
 app.use(express.json());
 
 app.post("/file", upload.single("file"), async (req, res) => {
