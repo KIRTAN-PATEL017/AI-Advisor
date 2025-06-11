@@ -7,19 +7,20 @@ import axios from 'axios';
 
 interface TextInputProps {
   onAnalyze: (data: AnalysisResult) => Promise<void>;
+  onAnalyzeStart: () => void;
 }
 
-export function TextInput({ onAnalyze }: TextInputProps) {
+export function TextInput({ onAnalyze,onAnalyzeStart }: TextInputProps) {
   const [resumeText, setResumeText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleAnalyze = async () => {
     if (!resumeText.trim()) return;
-
+    onAnalyzeStart();
     setIsProcessing(true);
     try {
-      const data = await axios.post('http://localhost:5000/text', {text : resumeText});
-      onAnalyze(data);
+      const res = await axios.post('http://localhost:5000/text', {text : resumeText});
+      onAnalyze(res.data);
     } finally {
       setIsProcessing(false);
     }

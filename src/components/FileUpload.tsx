@@ -7,9 +7,10 @@ import axios from 'axios';
 
 interface FileUploadProps {
   onAnalyze: (data: AnalysisResult) => Promise<void>;
+  onAnalyzeStart: () => void;
 }
 
-export function FileUpload({ onAnalyze }: FileUploadProps) {
+export function FileUpload({ onAnalyze , onAnalyzeStart}: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,26 +53,30 @@ export function FileUpload({ onAnalyze }: FileUploadProps) {
   };
 
   const handleAnalyze = async () => {
-    if (!selectedFile) return;
+  if (!selectedFile) return;
 
-    setIsProcessing(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile); // 'file' must match the multer field name
+  onAnalyzeStart();
 
-      const res = await axios.post('http://localhost:5000/file', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      onAnalyze(res.data);
+  setIsProcessing(true);
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
 
-    } catch (error) {
-      toast.error('Failed to process file');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    const res = await axios.post('http://localhost:5000/file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    await onAnalyze(res.data); // this already shows success toast
+
+  } catch (error) {
+    toast.error('Failed to process file');
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
 
   const removeFile = () => {
     setSelectedFile(null);

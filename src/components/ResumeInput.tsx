@@ -55,11 +55,11 @@ export function ResumeInput({ onAnalysisStart, onAnalysisComplete, isLoading }: 
           </TabsList>
 
           <TabsContent value="upload" className="space-y-4">
-            <FileUpload onAnalyze={handleAnalyze} />
+            <FileUpload onAnalyze={handleAnalyze} onAnalyzeStart={onAnalysisStart} />
           </TabsContent>
 
           <TabsContent value="paste" className="space-y-4">
-            <TextInput onAnalyze={handleAnalyze} />
+            <TextInput onAnalyze={handleAnalyze} onAnalyzeStart={onAnalysisStart}/>
           </TabsContent>
         </Tabs>
       </Card>

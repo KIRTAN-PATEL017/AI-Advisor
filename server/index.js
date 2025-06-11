@@ -36,8 +36,8 @@ ${extractedText}`;
 
     const resultText = await callHFapi(prompt);
     const content = resultText.choices[0].message.content;
-    console.log(content);
-    res.json({ roles: content.roles, skills : content.skills, improvements : content.improvements, summary: content.summary });
+    const parsedObject = JSON.parse(content.trim());
+    res.json(parsedObject);
   } catch (error) {
     console.error("PDF parse error:", error);
     res
@@ -70,7 +70,9 @@ Resume:
 ${text}`;
 
     const resultText = await callHFapi(prompt);
-    res.json({ message: "Text received successfully", content: resultText.choices[0].message.content});
+    const content = resultText.choices[0].message.content;
+    const parsedObject = JSON.parse(content.trim());
+    res.json(parsedObject);
   } catch (error) {
     console.error("Text endpoint error:", error);
     res
