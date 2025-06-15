@@ -1,24 +1,33 @@
-require('dotenv').config();
+require("dotenv").config();
+const axios = require("axios");
+const apiKey = process.env.YOUR_GEMINI_API_KEY;
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+const headers = {
+  "Content-Type": "application/json",
+};
 
-const { InferenceClient } = require("@huggingface/inference");
+const apiCall = async (data) => {
+  const prompt = `You are an AI career advisor. Analyze the following resume, and suggest suitable job roles, skills of the person, improvements and summary.Return the result in JSON in this exact format:{roles: [...], skills: [...], improvements": [{ original: ..., suggestion: ...}],summary": ...} Only return the final JSON result, no explanation or extra commentary.Resume:${data}`;
 
-const client = new InferenceClient(process.env.HF_TOKEN);
-
-
-
-const callHFapi = async (prompt) => {
-  const chatCompletion = await client.chatCompletion({
-    provider: "together",
-    model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-    messages: [
-        {
-            role: "user",
-            content: prompt,
-        },
+  const payload = {
+    contents: [
+      {
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
     ],
-});
+  };
+  try {
+    const res = await axios.post(url, payload, { headers });
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-  return chatCompletion;
-}
-
-module.exports = callHFapi;
+module.exports = {
+  apiCall,
+};

@@ -2,15 +2,12 @@ const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
 const pdfParse = require("pdf-parse");
-const callHFapi = require("./hf-api");
+const { apiCall } = require("./hf-api");
 
 const app = express();
 const upload = multer();
 
-app.use(cors({
-  origin: 'https://ai-advisor-lemon.vercel.app'
-}));
-
+app.use(cors({ origin: "https://ai-advisor-lemon.vercel.app" }));
 app.use(express.json());
 
 app.post("/file", upload.single("file"), async (req, res) => {
@@ -23,23 +20,21 @@ app.post("/file", upload.single("file"), async (req, res) => {
 
     const data = await pdfParse(file.buffer);
     const extractedText = data.text;
-    const prompt = `
-You are an AI career advisor. Analyze the following resume and return a JSON in this exact format:
-{
-  "roles": [...],
-  "skills": [...],
-  "improvements": [{ "original": "...", "suggestion": "..." }],
-  "summary": "..."
-}
 
-Only return the final JSON result, no explanation or extra commentary.
+    const resultText = await apiCall(extractedText);
+    const responseText = resultText?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-Resume:
-${extractedText}`;
+    if (!responseText) {
+      throw new Error("Invalid response from Gemini API");
+    }
 
-    const resultText = await callHFapi(prompt);
-    const content = resultText.choices[0].message.content;
-    const parsedObject = JSON.parse(content.trim());
+    const cleanedText = responseText
+      .replace(/^```(?:json)?/i, "") // Remove ``` or ```json
+      .replace(/```$/, "") // Remove closing ```
+      .trim();
+
+    const parsedObject = JSON.parse(cleanedText);
+
     res.json(parsedObject);
   } catch (error) {
     console.error("PDF parse error:", error);
@@ -58,23 +53,22 @@ app.post("/text", async (req, res) => {
         .status(400)
         .json({ error: "Text is required and must be a non-empty string." });
     }
-    const prompt = `
-You are an AI career advisor. Analyze the following resume and return a JSON in this exact format:
-{
-  "roles": [...],
-  "skills": [...],
-  "improvements": [{ "original": "...", "suggestion": "..." }],
-  "summary": "..."
-}
 
-Only return the final JSON result, no explanation or extra commentary.
+    const resultText = await apiCall(text);
+    console.log(resultText);
+    const responseText = resultText?.candidates[0]?.content?.parts[0]?.text;
 
-Resume:
-${text}`;
+    if (!responseText) {
+      throw new Error("Invalid response from Gemini API");
+    }
 
-    const resultText = await callHFapi(prompt);
-    const content = resultText.choices[0].message.content;
-    const parsedObject = JSON.parse(content.trim());
+    const cleanedText = responseText
+      .replace(/^```(?:json)?/i, "") // Remove ``` or ```json
+      .replace(/```$/, "") // Remove closing ```
+      .trim();
+
+    const parsedObject = JSON.parse(cleanedText);
+
     res.json(parsedObject);
   } catch (error) {
     console.error("Text endpoint error:", error);
